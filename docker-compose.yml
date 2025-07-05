@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  pyro-blur:
+    build: .
+    container_name: pyro-blur-container
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./results:/app/results
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    environment:
+      - DISPLAY=${DISPLAY}
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTHONPATH=/app
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - pyro-network
+    stdin_open: true
+    tty: true
+
+  jupyter:
+    build: .
+    container_name: pyro-blur-jupyter
+    command: ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models
+      - ./results:/app/results
+      - ./notebooks:/app/notebooks
+    environment:
+      - CUDA_VISIBLE_DEVICES=0
+      - PYTHONPATH=/app
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - pyro-network
+
+networks:
+  pyro-network:
+    driver: bridge

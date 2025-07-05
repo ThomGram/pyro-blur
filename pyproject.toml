@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyro-blur"
+version = "0.1.0"
+description = "YOLOv11 Face and License Plate Detection"
+authors = [{name = "Thomas", email = "thomas@grammatico.me"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "ultralytics>=8.0.0",
+    "torch>=1.9.0",
+    "torchvision>=0.10.0",
+    "opencv-python>=4.5.0",
+    "pillow>=8.0.0",
+    "numpy>=1.20.0",
+    "matplotlib>=3.3.0",
+    "pyyaml>=5.4.0",
+    "tqdm>=4.60.0",
+    "requests>=2.25.0",
+    "roboflow>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0.0",
+    "black>=21.0.0",
+    "flake8>=3.9.0",
+    "mypy>=0.910",
+]
+
+[project.urls]
+Homepage = "https://github.com/ThomGram/pyro-blur"
+Repository = "https://github.com/ThomGram/pyro-blur"
+Issues = "https://github.com/ThomGram/pyro-blur/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pyro_blur*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true

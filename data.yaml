@@ -1,0 +1,7 @@
+path: ./data
+train: train/images
+val: val/images
+test: test/images
+
+nc: 2
+names: ['face', 'license_plate']
