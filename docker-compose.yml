@@ -13,6 +13,7 @@ services:
       - DISPLAY=${DISPLAY}
       - CUDA_VISIBLE_DEVICES=0
       - PYTHONPATH=/app
+    shm_size: 2gb
     runtime: nvidia
     deploy:
       resources:

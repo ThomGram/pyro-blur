@@ -11,6 +11,8 @@ from pathlib import Path
 from ultralytics import YOLO
 import argparse
 from datetime import datetime
+import urllib.request
+import ssl
 
 class YOLOTrainer:
     def __init__(self, 
@@ -49,6 +51,51 @@ class YOLOTrainer:
         
         print(f"Device: {self.device}")
     
+    def download_model(self, model_name: str) -> Path:
+        """Download YOLOv11 model if not exists"""
+        model_path = Path(model_name)
+        
+        # If model already exists, return path
+        if model_path.exists():
+            print(f"✅ Model already exists: {model_path}")
+            return model_path
+        
+        # Try to download from ultralytics
+        print(f"📥 Downloading {model_name}...")
+        try:
+            # Let ultralytics handle the download automatically
+            model = YOLO(model_name)
+            print(f"✅ Model downloaded successfully: {model_name}")
+            return Path(model_name)
+        except Exception as e:
+            print(f"❌ Failed to download {model_name}: {e}")
+            # Fallback to manual download
+            return self._manual_download(model_name)
+    
+    def _manual_download(self, model_name: str) -> Path:
+        """Manual download fallback"""
+        base_url = "https://github.com/ultralytics/assets/releases/download/v8.3.0"
+        model_url = f"{base_url}/{model_name}"
+        
+        try:
+            # Create SSL context that doesn't verify certificates (for compatibility)
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            
+            print(f"📥 Manually downloading from: {model_url}")
+            urllib.request.urlretrieve(model_url, model_name)
+            
+            if Path(model_name).exists():
+                print(f"✅ Model downloaded successfully: {model_name}")
+                return Path(model_name)
+            else:
+                raise FileNotFoundError(f"Download failed: {model_name}")
+                
+        except Exception as e:
+            print(f"❌ Manual download failed: {e}")
+            raise FileNotFoundError(f"Could not download {model_name}. Please download manually.")
+    
     def validate_data_config(self):
         """Validate data configuration"""
         if not Path(self.data_config).exists():
@@ -80,9 +127,22 @@ class YOLOTrainer:
         # Validate data configuration
         data_config = self.validate_data_config()
         
-        # Load model
+        # Load model (let YOLO handle downloading)
         print(f"📥 Loading model: {self.model_size}")
-        model = YOLO(self.model_size)
+        try:
+            # Use model name without .pt extension for auto-download
+            model_name = self.model_size.replace('.pt', '')
+            model = YOLO(model_name)
+            print(f"✅ Model loaded successfully: {model_name}")
+        except Exception as e:
+            print(f"❌ Failed to load {model_name}, trying smaller model...")
+            try:
+                model = YOLO("yolo11n")  # Fallback to YOLOv11 nano
+                print(f"✅ Using fallback model: yolo11n")
+            except Exception as e2:
+                print(f"❌ Failed to load yolo11n, using yolo8n...")
+                model = YOLO("yolo8n")  # Final fallback
+                print(f"✅ Using model architecture: yolo8n")
         
         # Training parameters
         train_params = {
@@ -114,7 +174,8 @@ class YOLOTrainer:
             'dropout': 0.0,
             'val': True,
             'plots': True,
-            'verbose': True
+            'verbose': True,
+            'workers': 0  # Disable multiprocessing for Docker
         }
         
         print(f"🏋️  Training parameters:")

@@ -1,6 +1,10 @@
 # YOLOv11 Face and License Plate Detection Docker Image
 FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
 
+# Set non-interactive mode and timezone to avoid tzdata configuration prompts
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 # Set working directory
 WORKDIR /app
 
